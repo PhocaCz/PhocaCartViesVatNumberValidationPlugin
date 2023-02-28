@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="utf-8"?>
+<extension type="plugin" group="pct" method="upgrade" version="4.0">
+	<name>plg_pct_vies_vat_number_validation</name>
+	<author>Jan Pavelka (www.phoca.cz)</author>
+	<creationDate>01/03/2023</creationDate>
+	<authorEmail></authorEmail>
+	<authorUrl>https://www.phoca.cz</authorUrl>
+	<copyright>Jan Pavelka</copyright>
+	<license>GNU/GPL</license>
+	<version>4.0.6</version>
+	<description>PLG_PCT_VIES_VAT_NUMBER_VALIDATION_DESCRIPTION</description>
+	<projectName>PhocaCartViesVatNumberValidationPlugin</projectName>
+
+	<media destination="plg_pct_vies_vat_number_validation" folder="media">
+		<folder>css</folder>
+		<folder>js</folder>
+	</media>
+
+	<files>
+		<folder>tmpl</folder>
+		<folder>helpers</folder>
+		<filename plugin="vies_vat_number_validation">index.html</filename>
+		<filename plugin="vies_vat_number_validation">manifest.xml</filename>
+		<filename plugin="vies_vat_number_validation">vies_vat_number_validation.php</filename>
+	</files>
+
+	<languages>
+		<language tag="en-GB">language/en-GB/en-GB.plg_pct_vies_vat_number_validation.ini</language>
+		<language tag="en-GB">language/en-GB/en-GB.plg_pct_vies_vat_number_validation.sys.ini</language>
+	</languages>
+
+	<administration>
+		<languages>
+			<language tag="en-GB">language/en-GB/en-GB.plg_pct_vies_vat_number_validation.ini</language>
+			<language tag="en-GB">language/en-GB/en-GB.plg_pct_vies_vat_number_validation.sys.ini</language>
+		</languages>
+	</administration>
+	
+	<config>
+		<fields name="params">
+			<fieldset name="basic" addfieldpath="/administrator/components/com_phocacart/models/fields">
+
+
+				<field name="check_address" type="text" default="http://ec.europa.eu/taxation_customs/vies/services/checkVatService.wsdl" label="PLG_PCT_VIES_VAT_NUMBER_VALIDATION_FIELD_VAT_VALIDATION_SERVER_URL_LABEL" description="PLG_PCT_VIES_VAT_NUMBER_VALIDATION_FIELD_VAT_VALIDATION_SERVER_URL_DESC"/>
+
+			<field name="check_field" default="0" type="list" label="PLG_PCT_VIES_VAT_NUMBER_VALIDATION_FIELD_VALIDATION_FIELD_LABEL" description="PLG_PCT_VIES_VAT_NUMBER_VALIDATION_FIELD_VALIDATION_FIELD_DESC">
+             <option value="vat_1">vat_1</option>
+			<option value="vat_2">vat_2</option>
+		</field>
+
+		<field name="vat_connect_server_checkout" default="1" type="radio" layout="joomla.form.field.radio.switcher" label="PLG_PCT_VIES_VAT_NUMBER_VALIDATION_FIELD_RUN_VALIDATION_CHECKOUT_LABEL" description="PLG_PCT_VIES_VAT_NUMBER_VALIDATION_FIELD_RUN_VALIDATION_CHECKOUT_DESC">
+             <option value="0">PLG_PCT_VIES_VAT_NUMBER_VALIDATION_NO</option>
+			<option value="1">PLG_PCT_VIES_VAT_NUMBER_VALIDATION_YES</option>
+		</field>
+
+		<field name="vat_connect_server_account" default="0" type="radio" layout="joomla.form.field.radio.switcher" label="PLG_PCT_VIES_VAT_NUMBER_VALIDATION_FIELD_RUN_VALIDATION_ACCOUNT_LABEL" description="PLG_PCT_VIES_VAT_NUMBER_VALIDATION_FIELD_RUN_VALIDATION_ACCOUNT_DESC">
+             <option value="0">PLG_PCT_VIES_VAT_NUMBER_VALIDATION_NO</option>
+			<option value="1">PLG_PCT_VIES_VAT_NUMBER_VALIDATION_YES</option>
+		</field>
+
+		<field name="vat_connect_server_order" default="0" type="radio" layout="joomla.form.field.radio.switcher" label="PLG_PCT_VIES_VAT_NUMBER_VALIDATION_FIELD_RUN_VALIDATION_ORDER_LABEL" description="PLG_PCT_VIES_VAT_NUMBER_VALIDATION_FIELD_RUN_VALIDATION_ORDER_DESC">
+             <option value="0">PLG_PCT_VIES_VAT_NUMBER_VALIDATION_NO</option>
+			<option value="1">PLG_PCT_VIES_VAT_NUMBER_VALIDATION_YES</option>
+		</field>
+
+
+		<field name="price_without_tax_outside_vendor_country_valid_vat" default="0" type="radio" layout="joomla.form.field.radio.switcher" label="PLG_PCT_VIES_VAT_NUMBER_VALIDATION_FIELD_CHANGE_VAT_CUSTOMER_VALID_VAT_ID_BASED_OUTSIDE_VENDOR_COUNTRY_LABEL" description="PLG_PCT_VIES_VAT_NUMBER_VALIDATION_FIELD_CHANGE_VAT_CUSTOMER_VALID_VAT_ID_BASED_OUTSIDE_VENDOR_COUNTRY_DESC">
+             <option value="0">PLG_PCT_VIES_VAT_NUMBER_VALIDATION_NO</option>
+			<option value="1">PLG_PCT_VIES_VAT_NUMBER_VALIDATION_YES</option>
+		</field>
+
+		<field name="vat_assign_tax_outside_vendor_country_valid_vat" type="phocatax" class="form-control" size="40" label="PLG_PCT_VIES_VAT_NUMBER_VALIDATION_FIELD_ASSIGN_TAX_OUTSIDE_VENDOR_COUNTRY_VALID_VAT_LABEL" description="PLG_PCT_VIES_VAT_NUMBER_VALIDATION_FIELD_ASSIGN_TAX_OUTSIDE_VENDOR_COUNTRY_VALID_VAT_DESC"/>
+
+		<field name="price_without_tax_non_eu_customer" default="0" type="radio" layout="joomla.form.field.radio.switcher" label="PLG_PCT_VIES_VAT_NUMBER_VALIDATION_FIELD_CHANGE_VAT_CUSTOMER_NOT_BASED_EU_LABEL" description="PLG_PCT_VIES_VAT_NUMBER_VALIDATION_FIELD_CHANGE_VAT_CUSTOMER_NOT_BASED_EU_DESC">
+             <option value="0">PLG_PCT_VIES_VAT_NUMBER_VALIDATION_NO</option>
+			<option value="1">PLG_PCT_VIES_VAT_NUMBER_VALIDATION_YES</option>
+		</field>
+
+		<field name="vat_assign_tax_non_eu" type="phocatax" class="form-control" size="40" label="PLG_PCT_VIES_VAT_NUMBER_VALIDATION_FIELD_ASSIGN_TAX_NOT_BASED_EU_LABEL" description="PLG_PCT_VIES_VAT_NUMBER_VALIDATION_FIELD_ASSIGN_TAX_NOT_BASED_EU_DESC"/>
+
+		<field name="vendor_country" default="0" type="list" label="PLG_PCT_VIES_VAT_NUMBER_VALIDATION_FIELD_VENDOR_COUNTRY_LABEL" description="PLG_PCT_VIES_VAT_NUMBER_VALIDATION_FIELD_VENDOR_COUNTRY_DESC">
+            <option value="">PLG_PCT_VIES_VAT_NUMBER_VALIDATION_SELECT_COUNTRY_CODE</option>
+			<option value="AT">AT</option>
+			<option value="BE">BE</option>
+			<option value="BG">BG</option>
+			<option value="CY">CY</option>
+			<option value="CZ">CZ</option>
+			<option value="DE">DE</option>
+			<option value="DK">DK</option>
+			<option value="EE">EE</option>
+			<option value="EL">EL</option>
+			<option value="ES">ES</option>
+			<option value="FI">FI</option>
+			<option value="FR">FR</option>
+			<option value="HR">HR</option>
+			<option value="HU">HU</option>
+			<option value="IE">IE</option>
+			<option value="IT">IT</option>
+			<option value="LU">LU</option>
+			<option value="LV">LV</option>
+			<option value="LT">LT</option>
+			<option value="MT">MT</option>
+			<option value="NL">NL</option>
+			<option value="PL">PL</option>
+			<option value="PT">PT</option>
+			<option value="RO">RO</option>
+			<option value="SE">SE</option>
+			<option value="SI">SI</option>
+			<option value="SK">SK</option>
+			<option value="XI">XI</option>
+		</field>
+
+		<field name="vat_description" type="editor" buttons="true" hide="pagebreak,readmore" class="form-control" label="PLG_PCT_VIES_VAT_NUMBER_VALIDATION_FIELD_VAT_DESCRIPTION_LABEL" filter="JComponentHelper::filterText" description="PLG_PCT_VIES_VAT_NUMBER_VALIDATION_FIELD_VAT_DESCRIPTION_DESC"/>
+
+
+
+      <!--  <field name="api_key" type="text" default="" label="PLG_PCT_VIES_VAT_NUMBER_VALIDATION_FIELD_API_KEY_LABEL" description="PLG_PCT_VIES_VAT_NUMBER_VALIDATION_FIELD_API_KEY_DESC"/>
+        <field name="sender_name" type="text" default="" label="PLG_PCT_VIES_VAT_NUMBER_VALIDATION_FIELD_SENDER_NAME_LABEL" description="PLG_PCT_VIES_VAT_NUMBER_VALIDATION_FIELD_SENDER_NAME_DESC"/>
+
+        <field name="adult_content" default="0" type="list" label="PLG_PCT_VIES_VAT_NUMBER_VALIDATION_FIELD_ADULT_CONTENT_DEFAULT_VALUE_LABEL" description="PLG_PCT_VIES_VAT_NUMBER_VALIDATION_FIELD_ADULT_CONTENT_DEFAULT_VALUE_DESC">
+                <option value="1">PLG_PCT_VIES_VAT_NUMBER_VALIDATION_YES</option>
+                <option value="0">PLG_PCT_VIES_VAT_NUMBER_VALIDATION_NO</option>
+            </field>
+
+        <field name="default_weight" type="text" default="" label="PLG_PCT_VIES_VAT_NUMBER_VALIDATION_FIELD_WEIGHT_DEFAULT_VALUE_LABEL" description="PLG_PCT_VIES_VAT_NUMBER_VALIDATION_FIELD_WEIGHT_DEFAULT_VALUE_DESC"/>
+
+        <field name="payment_zero" type="PhocacartShippingParamsPayment" multiple="true" label="PLG_PCT_VIES_VAT_NUMBER_VALIDATION_FIELD_ZERO_PRICE_PAYMENT_LABEL" description="PLG_PCT_VIES_VAT_NUMBER_VALIDATION_FIELD_ZERO_PRICE_PAYMENT_DESC" layout="joomla.form.field.list-fancy-select" size="1"/>
+
+            <field name="status_zero" type="PhocacartShippingParamsOrderStatus" multiple="true" label="PLG_PCT_VIES_VAT_NUMBER_VALIDATION_FIELD_ZERO_PRICE_ORDER_STATUS_LABEL" description="PLG_PCT_VIES_VAT_NUMBER_VALIDATION_FIELD_ZERO_PRICE_ORDER_STATUS_DESC" layout="joomla.form.field.list-fancy-select" size="1">
+			</field>
+
+            <field name="save_changes" default="1" type="list" label="PLG_PCT_VIES_VAT_NUMBER_VALIDATION_FIELD_SAVE_CUSTOM_CHANGES_LABEL" description="PLG_PCT_VIES_VAT_NUMBER_VALIDATION_FIELD_SAVE_CUSTOM_CHANGES_DESC">
+                <option value="1">PLG_PCT_VIES_VAT_NUMBER_VALIDATION_YES</option>
+                <option value="0">PLG_PCT_VIES_VAT_NUMBER_VALIDATION_NO</option>
+		</field>-->
+
+	</fieldset>
+	</fields>
+
+</config>
+
+	<updateservers>
+		<server type="extension" name="PLG_PCT_VIES_VAT_NUMBER_VALIDATION" priority="1"><![CDATA[https://raw.githubusercontent.com/PhocaCz/PhocaCartViesVatNumberValidationPlugin/main/manifest.xml]]></server>
+	</updateservers>
+</extension>
