@@ -134,6 +134,84 @@ class plgPCTVies_Vat_Number_Validation extends JPlugin
 
 	}
 
+	/* Order edit view - administration */
+	function onPCTgetUserBillingInfoAdminEdit($context, $item, $eventData) {
+
+
+		$output = array();
+
+		if (!empty($item->params_user)) {
+			$pU = json_decode($item->params_user, true);
+
+
+			$output['content'] = '<div class="ph-order-edit-user-info-header">'.Text::_('PLG_PCT_VIES_VAT_NUMBER_VALIDATION_VAT_VALIDATION_SUMMARY').'</div>';
+			$output['content'] .= '<div class="ph-order-edit-user-info">';
+
+
+			$output['content'] .= isset($pU['vat_name']) && $pU['vat_name'] != '' ? '<div class="ph-user-info-name ph-item"><div class="ph-label">' . Text::_('PLG_PCT_VIES_VAT_NUMBER_VALIDATION_VAT_NAME') . '</div><div class="ph-value">'. $pU['vat_name'] .'</div></div>' : '';
+			$output['content'] .= isset($pU['vat_address']) && $pU['vat_address'] != '' ? '<div class="ph-user-info-address ph-item"><div class="ph-label">' . Text::_('PLG_PCT_VIES_VAT_NUMBER_VALIDATION_VAT_ADDRESS') . '</div><div class="ph-value">'. $pU['vat_address'] .'</div></div>' : '';
+
+			$vat = '';
+			if (isset($pU['vat_country_code']) && $pU['vat_country_code'] != '' && isset($pU['vat_number']) && $pU['vat_number'] != '') {
+				$vat = $pU['vat_country_code'] . $pU['vat_number'];
+
+				$output['content'] .= '<div class="ph-user-info-vat-number ph-item"><div class="ph-label">' . Text::_('PLG_PCT_VIES_VAT_NUMBER_VALIDATION_VAT_NUMBER') . '</div><div class="ph-value">'. $vat .'</div></div>';
+
+				$output['content'] .= '<div class="ph-user-info-vat-country-code ph-item"><div class="ph-label">' . Text::_('PLG_PCT_VIES_VAT_NUMBER_VALIDATION_VAT_COUNTRY_CODE') . '</div><div class="ph-value">'. $pU['vat_country_code'] .'</div></div>';
+
+			}
+
+
+			$output['content'] .= isset($pU['vat_country_code_address']) && $pU['vat_country_code_address'] != '' ? '<div class="ph-user-info-vat-country-code-address ph-item"><div class="ph-label">' . Text::_('PLG_PCT_VIES_VAT_NUMBER_VALIDATION_VAT_COUNTRY_CODE_ADDRESS') . '</div><div class="ph-value">'. $pU['vat_country_code_address'] .'</div></div>' : '';
+
+			$output['content'] .= isset($pU['vat_country_request_date']) && $pU['vat_country_request_date'] != '' ? '<div class="ph-user-info-vat-request_date ph-item"><div class="ph-label">' . Text::_('PLG_PCT_VIES_VAT_NUMBER_VALIDATION_VAT_REQUEST_DATE') . '</div><div class="ph-value">'. $pU['vat_request_date'] .'</div></div>' : '';
+
+			if (isset($pU['vat_valid']) && $pU['vat_valid'] != '') {
+				if ($pU['vat_valid'] == 1) {
+					$validText = Text::_('PLG_PCT_VIES_VAT_NUMBER_VALIDATION_YES');
+				} else {
+					$validText = Text::_('PLG_PCT_VIES_VAT_NUMBER_VALIDATION_NO');
+				}
+				$output['content'] .= '<div class="ph-user-info-vat-valid ph-item"><div class="ph-label">' . Text::_('PLG_PCT_VIES_VAT_NUMBER_VALIDATION_VAT_VALID') . '</div><div class="ph-value">'. $validText .'</div></div>';
+			}
+
+			$classMsg = '';
+			if (isset($pU['vat_vies_message_type']) && $pU['vat_vies_message_type'] != '') {
+				if ($pU['vat_vies_message_type'] != '') {
+					$classMsg = 'ph-msg-' . $pU['vat_vies_message_type'];
+				}
+			}
+
+			$output['content'] .= isset($pU['vat_vies_message']) && $pU['vat_vies_message'] != '' ? '<div class="ph-user-info-vat-request_date ph-item"><div class="ph-label">' . Text::_('PLG_PCT_VIES_VAT_NUMBER_VALIDATION_VAT_VIES_MESSAGE') . '</div><div class="'.$classMsg.'">'. $pU['vat_vies_message'] .'</div></div>' : '';
+
+
+			if (isset($pU['vat_customer_eu_valid_different']) && $pU['vat_customer_eu_valid_different'] != '') {
+				if ($pU['vat_customer_eu_valid_different'] == 1) {
+					$validText = Text::_('PLG_PCT_VIES_VAT_NUMBER_VALIDATION_YES');
+				} else {
+					$validText = Text::_('PLG_PCT_VIES_VAT_NUMBER_VALIDATION_NO');
+				}
+				$output['content'] .= '<div class="ph-user-info-vat-customer-eu-valid-different ph-item"><div class="ph-label">' . Text::_('PLG_PCT_VIES_VAT_NUMBER_VALIDATION_CUSTOMER_EU_VALID_DIFFERENT') . '</div><div class="ph-value">'. $validText .'</div></div>';
+			}
+
+			if (isset($pU['vat_customer_non_eu']) && $pU['vat_customer_non_eu'] != '') {
+				if ($pU['vat_customer_non_eu'] == 1) {
+					$validText = Text::_('PLG_PCT_VIES_VAT_NUMBER_VALIDATION_YES');
+				} else {
+					$validText = Text::_('PLG_PCT_VIES_VAT_NUMBER_VALIDATION_NO');
+				}
+				$output['content'] .= '<div class="ph-user-info-vat-customer-non-eu ph-item"><div class="ph-label">' . Text::_('PLG_PCT_VIES_VAT_NUMBER_VALIDATION_CUSTOMER_NON_EU') . '</div><div>'. $validText .'</div></div>';
+			}
+
+
+
+			$output['content'] .= '</div>';
+		}
+
+
+		return $output;
+	}
+
 	/* Real change of VAT, after the information is stored about VAT check, etc, in this event it comes to real change of VAT in price items or calculations */
 	public function onPCTonChangeTaxBasedRule($context, &$taxData, $eventData) {
 
@@ -269,20 +347,20 @@ class plgPCTVies_Vat_Number_Validation extends JPlugin
 			$vatNumber 		= substr($vatId, 2);
 
 			try {
-				$client = new \SoapClient($check_address);
+				/*$client = new \SoapClient($check_address);
 					$response = $client->checkVat([
 					  'countryCode' => $countryCode,
 					  'vatNumber'   => $vatNumber
 					]);
 
 				// TEST AND DEBUG TODO COMMENT
-				/*$response = new stdClass();
+				/**/$response = new stdClass();
 				$response->countryCode = 'DE';
-				$response->vatNumber = '100200300';
+				$response->vatNumber = '123456789';
 				$response->requestDate = "2023-02-23+01:00 ~ 2023-02-23+01:00";
 				$response->valid = TRUE;
 				$response->name = 'Test GmbH';
-				$response->address = 'Teststrasse 13; München';*/
+				$response->address = 'Teststrasse 13; München; 80331';/**/
 				// END TEST AND DEBUG
 
 				$paramsUser['vat_country_code_address'] = '';
