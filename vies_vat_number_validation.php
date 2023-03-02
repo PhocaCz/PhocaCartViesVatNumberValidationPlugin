@@ -347,20 +347,20 @@ class plgPCTVies_Vat_Number_Validation extends JPlugin
 			$vatNumber 		= substr($vatId, 2);
 
 			try {
-				/*$client = new \SoapClient($check_address);
+				$client = new \SoapClient($check_address);
 					$response = $client->checkVat([
 					  'countryCode' => $countryCode,
 					  'vatNumber'   => $vatNumber
 					]);
 
 				// TEST AND DEBUG TODO COMMENT
-				/**/$response = new stdClass();
+				/*$response = new stdClass();
 				$response->countryCode = 'DE';
 				$response->vatNumber = '123456789';
 				$response->requestDate = "2023-02-23+01:00 ~ 2023-02-23+01:00";
 				$response->valid = TRUE;
 				$response->name = 'Test GmbH';
-				$response->address = 'Teststrasse 13; München; 80331';/**/
+				$response->address = 'Teststrasse 13; München; 80331';*/
 				// END TEST AND DEBUG
 
 				$paramsUser['vat_country_code_address'] = '';
