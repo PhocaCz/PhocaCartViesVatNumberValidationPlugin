@@ -354,13 +354,13 @@ class plgPCTVies_Vat_Number_Validation extends JPlugin
 					]);
 
 				// TEST AND DEBUG TODO COMMENT
-				/*$response = new stdClass();
+				/**$response = new stdClass();
 				$response->countryCode = 'DE';
 				$response->vatNumber = '123456789';
 				$response->requestDate = "2023-02-23+01:00 ~ 2023-02-23+01:00";
 				$response->valid = TRUE;
 				$response->name = 'Test GmbH';
-				$response->address = 'Teststrasse 13; München; 80331';*/
+				$response->address = 'Teststrasse 13; München; 80331';**/
 				// END TEST AND DEBUG
 
 				$paramsUser['vat_country_code_address'] = '';
@@ -376,12 +376,19 @@ class plgPCTVies_Vat_Number_Validation extends JPlugin
 				$paramsUser['vat_name'] = isset($response->name) ? PhocaCartText::filterValue($response->name, 'text'): '';
 				$paramsUser['vat_address'] = isset($response->address) ? PhocaCartText::filterValue($response->address, 'text') : '';
 
-
-				$paramsUser['vat_vies_message']      = Text::_('PLG_PCT_VIES_VAT_NUMBER_VALIDATION_SUCCESS_VAT_NUMBER_VALID') . ' ('.Text::_('PLG_PCT_VIES_VAT_NUMBER_VAT_NUMBER'). ': '.PhocaCartText::filterValue($vatId, 'alphanumeric').')';
-				$paramsUser['vat_vies_message_type'] = 'success';
-				$data->vat_valid = 1;
+				if ((int)$paramsUser['vat_valid'] == 1) {
+					$paramsUser['vat_vies_message']      = Text::_('PLG_PCT_VIES_VAT_NUMBER_VALIDATION_SUCCESS_VAT_NUMBER_VALID') . ' (' . Text::_('PLG_PCT_VIES_VAT_NUMBER_VAT_NUMBER') . ': ' . PhocaCartText::filterValue($vatId, 'alphanumeric') . ')';
+					$paramsUser['vat_vies_message_type'] = 'success';
+					$data->vat_valid                     = 1;
+				} else {
+					$paramsUser['vat_vies_message']      = Text::_('PLG_PCT_VIES_VAT_NUMBER_VALIDATION_VAT_NUMBER_NOT_VALID') . ' (' . Text::_('PLG_PCT_VIES_VAT_NUMBER_VAT_NUMBER') . ': ' . PhocaCartText::filterValue($vatId, 'alphanumeric') . ')';
+					$paramsUser['vat_vies_message_type'] = 'error';
+					$data->vat_valid                     = 0;
+				}
 
 				$data->params_user = json_encode($paramsUser);
+
+
 				return;
 
 			} catch(Exception $e) {

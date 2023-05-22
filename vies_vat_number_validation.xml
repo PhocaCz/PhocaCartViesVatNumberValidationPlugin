@@ -2,12 +2,12 @@
 <extension type="plugin" group="pct" method="upgrade" version="4.0">
 	<name>plg_pct_vies_vat_number_validation</name>
 	<author>Jan Pavelka (www.phoca.cz)</author>
-	<creationDate>02/03/2023</creationDate>
+	<creationDate>22/05/2023</creationDate>
 	<authorEmail></authorEmail>
 	<authorUrl>https://www.phoca.cz</authorUrl>
 	<copyright>Jan Pavelka</copyright>
 	<license>GNU/GPL</license>
-	<version>4.0.6</version>
+	<version>4.0.7</version>
 	<description>PLG_PCT_VIES_VAT_NUMBER_VALIDATION_DESCRIPTION</description>
 	<projectName>PhocaCartViesVatNumberValidationPlugin</projectName>
 
