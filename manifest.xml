@@ -11,7 +11,6 @@
 		<downloads>
 			<downloadurl type="full" format="zip">https://github.com/PhocaCz/PhocaCartViesVatNumberValidationPlugin/releases/download/4.0.7/plg_pct_vies_vat_number_validation_v4.0.7.zip</downloadurl>
 		</downloads>
-		<sha512>6571a0b832b693629d912a00adaf682dd022941498151b3f8727b9928093763cc530eddeb2428fc2f81d21110cab2d26a4fb21d4a14b75bbaef5e65d308c8353</sha512>
 		<tags>
 			<tag>stable</tag>
 		</tags>
@@ -19,6 +18,27 @@
 		<maintainerurl>https://www.phoca.cz/</maintainerurl>
 		<section>Updates</section>
 		<targetplatform name="joomla" version="4\.*"/>
+		<client>site</client>
+	</update>
+	<update>
+		<name><![CDATA[ Phoca Cart VIES VAT Number Validation Plugin ]]></name>
+		<description><![CDATA[ Phoca Cart Tax - VIES VAT Number Validation Plugin - tax method for Phoca Cart component. Checking the validity of EU VAT number using VIES. ]]></description>
+		<element>vies_vat_number_validation</element>
+		<folder>pct</folder>
+		<type>plugin</type>
+		<version>5.0.1</version>
+		<infourl title="Phoca Cart VIES VAT Number Validation Plugin 5.0.1">https://www.phoca.cz/</infourl>
+		<downloads>
+			<downloadurl type="full" format="zip">https://github.com/PhocaCz/PhocaCartViesVatNumberValidationPlugin/releases/download/5.0.1/plg_pct_vies_vat_number_validation_v5.0.1.zip</downloadurl>
+		</downloads>
+		<sha512>d380344494682e8b115bdeb67d561ddedae1028d3ad971e4aacea1969675e3d0fc7ffc18be156accfed0e0e7008d0aaeb872e5c37162be44bf0e684bcc078199</sha512>
+		<tags>
+			<tag>stable</tag>
+		</tags>
+		<maintainer><![CDATA[ Phoca.cz ]]></maintainer>
+		<maintainerurl>https://www.phoca.cz/</maintainerurl>
+		<section>Updates</section>
+		<targetplatform name="joomla" version="(4|5)\.*"/>
 		<client>site</client>
 	</update>
 </updates>

@@ -10,6 +10,7 @@
 use Joomla\CMS\Component\ComponentHelper;
 use Joomla\CMS\Factory;
 use Joomla\CMS\Language\Text;
+use Joomla\CMS\Plugin\CMSPlugin;
 use Joomla\CMS\Plugin\PluginHelper;
 use Joomla\Registry\Registry;
 
@@ -22,19 +23,25 @@ jimport( 'joomla.html.parameter' );
 //phocacartimport('phocacart.utils.log');
 
 if (!ComponentHelper::isEnabled('com_phocacart', true)) {
-	$app = JFactory::getApplication();
-	$app->enqueueMessage(JText::_('Phoca Cart Error'), JText::_('Phoca Cart is not installed on your system'), 'error');
+	$app = Factory::getApplication();
+	$app->enqueueMessage(Text::_('Phoca Cart Error'), Text::_('Phoca Cart is not installed on your system'), 'error');
 	return;
 }
 
-if (!class_exists('PhocaCartLoader')) {
-    require_once( JPATH_ADMINISTRATOR.'/components/com_phocacart/libraries/loader.php');
+if (file_exists(JPATH_ADMINISTRATOR . '/components/com_phocacart/libraries/bootstrap.php')) {
+	// Joomla 5 and newer
+	require_once(JPATH_ADMINISTRATOR . '/components/com_phocacart/libraries/bootstrap.php');
+} else {
+	// Joomla 4
+	if (!class_exists('PhocaCartLoader')) {
+    	require_once( JPATH_ADMINISTRATOR.'/components/com_phocacart/libraries/loader.php');
+	}
+	JLoader::registerPrefix('Phocacart', JPATH_ADMINISTRATOR . '/components/com_phocacart/libraries/phocacart');
+	phocacartimport('phocacart.text.text');
+	phocacartimport('phocacart.render.style');
 }
-JLoader::registerPrefix('Phocacart', JPATH_ADMINISTRATOR . '/components/com_phocacart/libraries/phocacart');
-phocacartimport('phocacart.text.text');
-phocacartimport('phocacart.render.style');
 
-class plgPCTVies_Vat_Number_Validation extends JPlugin
+class plgPCTVies_Vat_Number_Validation extends CMSPlugin
 {
 	protected $name = 'vies_vat_number_validation';
 
@@ -108,6 +115,24 @@ class plgPCTVies_Vat_Number_Validation extends JPlugin
 			}
 		}
 
+
+		return $output;
+	}
+
+	/* Checkout - display information on top of checkout to get info about if the user has valid VAT - useful e.g. because of CSS class */
+	public function onPCTonStartCheckoutView($context, &$data, $eventData) {
+
+		$s             = PhocacartRenderStyle::getStyles();
+		$output            = [];
+
+		if (!empty($data[0]->params_user)) {
+			$paramsUser = json_decode($data[0]->params_user, true);
+			if (isset($paramsUser['vat_valid']) && (int)$paramsUser['vat_valid'] == 1) {
+				$output['checkout_class'] = 'phVatValid';
+			} else {
+				$output['checkout_class'] = 'phNotVatValid';
+			}
+		}
 
 		return $output;
 	}
@@ -240,6 +265,8 @@ class plgPCTVies_Vat_Number_Validation extends JPlugin
 
 		$price_without_tax_outside_vendor_country_valid_vat = $this->params->get('price_without_tax_outside_vendor_country_valid_vat', 0);
 		$price_without_tax_non_eu_customer = $this->params->get('price_without_tax_non_eu_customer', 0);
+		$apply_dynamic_tax_rate = $this->params->get('apply_dynamic_tax_rate', 0);
+
 
 		if ($price_without_tax_outside_vendor_country_valid_vat == 1 && isset($paramsUser['vat_customer_eu_valid_different']) && (int)$paramsUser['vat_customer_eu_valid_different'] == 1) {
 			// Apply information about if the VAT customer from EU will have price without VAT or with specific VAT (in case customer EU country is not equal vendor EU country)
@@ -252,6 +279,7 @@ class plgPCTVies_Vat_Number_Validation extends JPlugin
 
 					if (!empty($tax)){
 
+
 						$taxData['taxid'] = $tax['id'];
 						$taxData['taxpluginid'] = (int)$pluginId;
 						$taxData['taxcountryid']    = 0;
@@ -259,6 +287,60 @@ class plgPCTVies_Vat_Number_Validation extends JPlugin
 						$taxData['taxrate']     = $tax['tax_rate'];
 						$taxData['taxtitle']    = $tax['title'];
 						$taxData['taxhide']    = $tax['tax_hide'];
+
+						// We can assign a VAT but we can even apply dynamic tax rate for this
+						// Example: Common VAT with 0% will be set but dynamic tax rate can even reset it to country tax or region
+						if ($apply_dynamic_tax_rate == 1) {
+
+							$paramsC                   = PhocacartUtils::getComponentParameters();
+							$dynamic_tax_rate          = $paramsC->get('dynamic_tax_rate', 0);
+							$dynamic_tax_rate_priority = $paramsC->get('dynamic_tax_rate_priority', 1);// country prioritized
+
+							if ($dynamic_tax_rate == 0) {
+								return true;
+							}
+
+							$taxChangedA                 = array();
+							$taxChangedA['taxid']        = (int)$tax['id'];
+							$taxChangedA['taxrate']      = $tax['tax_rate'];
+							$taxChangedA['taxtitle']     = $tax['title'];
+							$taxChangedA['taxcountryid'] = 0;
+							$taxChangedA['taxregionid']  = 0;
+							$taxChangedA['taxpluginid']  = (int)$pluginId;
+							$taxChangedA['taxhide']      = $tax['tax_hide'];
+
+							if ($dynamic_tax_rate_priority == 1) {
+								// Country prioritized
+								$taxChangedA = PhocacartTax::getTaxByCountry($tax['id']);
+
+								//Not found - try to find region
+								if (empty($taxChangedA)) {
+									$taxChangedA = PhocacartTax::getTaxByRegion($tax['id']);
+								}
+								// If country or region based tax does not have title, set the default one
+								if (!empty($taxChangedA) && $taxChangedA['taxtitle'] == '') {
+									$taxChangedA['taxtitle'] = $tax['title'];
+								}
+							} else {
+								// Region prioritized
+								$taxChangedA = PhocacartTax::getTaxByRegion($tax['id']);
+								//Not found - try to find country
+								if (empty($taxChangedA)) {
+									$taxChangedA = PhocacartTax::getTaxByCountry($tax['id']);
+								}
+								// If country or region based tax does not have title, set the default one
+								if (!empty($taxChangedA) && $taxChangedA['taxtitle'] == '') {
+									$taxChangedA['taxtitle'] = $tax['title'];
+								}
+							}
+
+							if (!isset($taxChangedA['taxhide'])) {
+							   $taxChangedA['taxhide']= $tax['tax_hide'];
+						   }
+
+							$taxData = $taxChangedA;
+
+						}
 						return true;
 					}
 
@@ -285,6 +367,7 @@ class plgPCTVies_Vat_Number_Validation extends JPlugin
 
 					if (!empty($tax)){
 
+
 						$taxData['taxid'] = $tax['id'];
 						$taxData['taxpluginid'] = (int)$pluginId;
 						$taxData['taxcountryid']    = 0;
@@ -292,8 +375,63 @@ class plgPCTVies_Vat_Number_Validation extends JPlugin
 						$taxData['taxrate']     = $tax['tax_rate'];
 						$taxData['taxtitle']    = $tax['title'];
 						$taxData['taxhide']    = $tax['tax_hide'];
+
+						// We can assign a VAT but we can even apply dynamic tax rate for this
+						// Example: Common VAT with 0% will be set but dynamic tax rate can even reset it to country tax or region
+						if ($apply_dynamic_tax_rate == 1) {
+
+							$paramsC                   = PhocacartUtils::getComponentParameters();
+							$dynamic_tax_rate          = $paramsC->get('dynamic_tax_rate', 0);
+							$dynamic_tax_rate_priority = $paramsC->get('dynamic_tax_rate_priority', 1);// country prioritized
+
+							if ($dynamic_tax_rate == 0) {
+								return true;
+							}
+
+							$taxChangedA                 = array();
+							$taxChangedA['taxid']        = (int)$tax['id'];
+							$taxChangedA['taxrate']      = $tax['tax_rate'];
+							$taxChangedA['taxtitle']     = $tax['title'];
+							$taxChangedA['taxcountryid'] = 0;
+							$taxChangedA['taxregionid']  = 0;
+							$taxChangedA['taxpluginid']  = (int)$pluginId;
+							$taxChangedA['taxhide']      = $tax['tax_hide'];
+
+							if ($dynamic_tax_rate_priority == 1) {
+								// Country prioritized
+								$taxChangedA = PhocacartTax::getTaxByCountry($tax['id']);
+
+								//Not found - try to find region
+								if (empty($taxChangedA)) {
+									$taxChangedA = PhocacartTax::getTaxByRegion($tax['id']);
+								}
+								// If country or region based tax does not have title, set the default one
+								if (!empty($taxChangedA) && $taxChangedA['taxtitle'] == '') {
+									$taxChangedA['taxtitle'] = $tax['title'];
+								}
+							} else {
+								// Region prioritized
+								$taxChangedA = PhocacartTax::getTaxByRegion($tax['id']);
+								//Not found - try to find country
+								if (empty($taxChangedA)) {
+									$taxChangedA = PhocacartTax::getTaxByCountry($tax['id']);
+								}
+								// If country or region based tax does not have title, set the default one
+								if (!empty($taxChangedA) && $taxChangedA['taxtitle'] == '') {
+									$taxChangedA['taxtitle'] = $tax['title'];
+								}
+							}
+
+							if (!isset($taxChangedA['taxhide'])) {
+							   $taxChangedA['taxhide']= $tax['tax_hide'];
+						   }
+
+							$taxData = $taxChangedA;
+
+						}
 						return true;
 					}
+
 
 				}
 
@@ -318,7 +456,7 @@ class plgPCTVies_Vat_Number_Validation extends JPlugin
 
 		$check_field = $this->params->get('check_field', 'vat_1');
 		$check_address = $this->params->get('check_address', 'http://ec.europa.eu/taxation_customs/vies/services/checkVatService.wsdl');
-		//$check_address = PhocaCartText::filterValue($check_address, 'text').')';
+		//$check_address = PhocacartText::filterValue($check_address, 'text').')';
 
 		$data->vat_valid = 0;
 
@@ -336,7 +474,7 @@ class plgPCTVies_Vat_Number_Validation extends JPlugin
 			if (preg_match($vatIdRegex, $vatId) !== 1) {
 
 				$this->cleanParamsUser($paramsUser);
-				$paramsUser['vat_vies_message']      = Text::_('PLG_PCT_VIES_VAT_NUMBER_VALIDATION_ERROR_INVALID_VAT_NUMBER_FORMAT') . ' ('.Text::_('PLG_PCT_VIES_VAT_NUMBER_VAT_NUMBER'). ': '.PhocaCartText::filterValue($vatId, 'alphanumeric').')';
+				$paramsUser['vat_vies_message']      = Text::_('PLG_PCT_VIES_VAT_NUMBER_VALIDATION_ERROR_INVALID_VAT_NUMBER_FORMAT') . ' ('.Text::_('PLG_PCT_VIES_VAT_NUMBER_VAT_NUMBER'). ': '.PhocacartText::filterValue($vatId, 'alphanumeric').')';
 				$paramsUser['vat_vies_message_type'] = 'error';
 				$data->params_user = json_encode($paramsUser);
 				return;
@@ -354,13 +492,13 @@ class plgPCTVies_Vat_Number_Validation extends JPlugin
 					]);
 
 				// TEST AND DEBUG TODO COMMENT
-				/**$response = new stdClass();
+				/*$response = new stdClass();
 				$response->countryCode = 'DE';
 				$response->vatNumber = '123456789';
 				$response->requestDate = "2023-02-23+01:00 ~ 2023-02-23+01:00";
 				$response->valid = TRUE;
 				$response->name = 'Test GmbH';
-				$response->address = 'Teststrasse 13; München; 80331';**/
+				$response->address = 'Teststrasse 13; München; 80331';*/
 				// END TEST AND DEBUG
 
 				$paramsUser['vat_country_code_address'] = '';
@@ -369,19 +507,19 @@ class plgPCTVies_Vat_Number_Validation extends JPlugin
 					$paramsUser['vat_country_code_address'] = $countryCode;
 				}
 
-				$paramsUser['vat_country_code'] = isset($response->countryCode) ? PhocaCartText::filterValue($response->countryCode, 'alphanumeric') : '';
-				$paramsUser['vat_number'] = isset($response->vatNumber) ? PhocaCartText::filterValue($response->vatNumber, 'number')  : '';
-				$paramsUser['vat_request_date'] = isset($response->requestDate) ? PhocaCartText::filterValue($response->requestDate, 'text')  : '';
+				$paramsUser['vat_country_code'] = isset($response->countryCode) ? PhocacartText::filterValue($response->countryCode, 'alphanumeric') : '';
+				$paramsUser['vat_number'] = isset($response->vatNumber) ? PhocacartText::filterValue($response->vatNumber, 'number')  : '';
+				$paramsUser['vat_request_date'] = isset($response->requestDate) ? PhocacartText::filterValue($response->requestDate, 'text')  : '';
 				$paramsUser['vat_valid'] = isset($response->valid) ? (int)$response->valid : 0;
-				$paramsUser['vat_name'] = isset($response->name) ? PhocaCartText::filterValue($response->name, 'text'): '';
-				$paramsUser['vat_address'] = isset($response->address) ? PhocaCartText::filterValue($response->address, 'text') : '';
+				$paramsUser['vat_name'] = isset($response->name) ? PhocacartText::filterValue($response->name, 'text'): '';
+				$paramsUser['vat_address'] = isset($response->address) ? PhocacartText::filterValue($response->address, 'text') : '';
 
 				if ((int)$paramsUser['vat_valid'] == 1) {
-					$paramsUser['vat_vies_message']      = Text::_('PLG_PCT_VIES_VAT_NUMBER_VALIDATION_SUCCESS_VAT_NUMBER_VALID') . ' (' . Text::_('PLG_PCT_VIES_VAT_NUMBER_VAT_NUMBER') . ': ' . PhocaCartText::filterValue($vatId, 'alphanumeric') . ')';
+					$paramsUser['vat_vies_message']      = Text::_('PLG_PCT_VIES_VAT_NUMBER_VALIDATION_SUCCESS_VAT_NUMBER_VALID') . ' (' . Text::_('PLG_PCT_VIES_VAT_NUMBER_VAT_NUMBER') . ': ' . PhocacartText::filterValue($vatId, 'alphanumeric') . ')';
 					$paramsUser['vat_vies_message_type'] = 'success';
 					$data->vat_valid                     = 1;
 				} else {
-					$paramsUser['vat_vies_message']      = Text::_('PLG_PCT_VIES_VAT_NUMBER_VALIDATION_VAT_NUMBER_NOT_VALID') . ' (' . Text::_('PLG_PCT_VIES_VAT_NUMBER_VAT_NUMBER') . ': ' . PhocaCartText::filterValue($vatId, 'alphanumeric') . ')';
+					$paramsUser['vat_vies_message']      = Text::_('PLG_PCT_VIES_VAT_NUMBER_VALIDATION_VAT_NUMBER_NOT_VALID') . ' (' . Text::_('PLG_PCT_VIES_VAT_NUMBER_VAT_NUMBER') . ': ' . PhocacartText::filterValue($vatId, 'alphanumeric') . ')';
 					$paramsUser['vat_vies_message_type'] = 'error';
 					$data->vat_valid                     = 0;
 				}
@@ -437,7 +575,7 @@ class plgPCTVies_Vat_Number_Validation extends JPlugin
 
 				$this->cleanParamsUser($paramsUser);
 				$paramsUser['vat_vies_message_internal'] = $errorMsg;
-				$paramsUser['vat_vies_message']      .= ' ('.Text::_('PLG_PCT_VIES_VAT_NUMBER_VAT_NUMBER'). ': '.PhocaCartText::filterValue($vatId, 'alphanumeric').')';
+				$paramsUser['vat_vies_message']      .= ' ('.Text::_('PLG_PCT_VIES_VAT_NUMBER_VAT_NUMBER'). ': '.PhocacartText::filterValue($vatId, 'alphanumeric').')';
 				$paramsUser['vat_vies_message_type'] = 'error';
 				$data->params_user = json_encode($paramsUser);
 
