@@ -26,19 +26,19 @@
 		<element>vies_vat_number_validation</element>
 		<folder>pct</folder>
 		<type>plugin</type>
-		<version>5.0.1</version>
-		<infourl title="Phoca Cart VIES VAT Number Validation Plugin 5.0.1">https://www.phoca.cz/</infourl>
+		<version>5.0.2</version>
+		<infourl title="Phoca Cart VIES VAT Number Validation Plugin 5.0.2">https://www.phoca.cz/</infourl>
 		<downloads>
-			<downloadurl type="full" format="zip">https://github.com/PhocaCz/PhocaCartViesVatNumberValidationPlugin/releases/download/5.0.1/plg_pct_vies_vat_number_validation_v5.0.1.zip</downloadurl>
+			<downloadurl type="full" format="zip">https://github.com/PhocaCz/PhocaCartViesVatNumberValidationPlugin/releases/download/5.0.2/plg_pct_vies_vat_number_validation_v5.0.2.zip</downloadurl>
 		</downloads>
-		<sha512>d380344494682e8b115bdeb67d561ddedae1028d3ad971e4aacea1969675e3d0fc7ffc18be156accfed0e0e7008d0aaeb872e5c37162be44bf0e684bcc078199</sha512>
+		<sha512>3a47e4c8391df63ce733b26def6ddd2adacd9f92092d9364fe548969e061a2121a4ca73850fa3718638057efbdac70ed3b638f91d44f2761b125a72b986004b5</sha512>
 		<tags>
 			<tag>stable</tag>
 		</tags>
 		<maintainer><![CDATA[ Phoca.cz ]]></maintainer>
 		<maintainerurl>https://www.phoca.cz/</maintainerurl>
 		<section>Updates</section>
-		<targetplatform name="joomla" version="(4|5)\.*"/>
+		<targetplatform name="joomla" version="5\.*"/>
 		<client>site</client>
 	</update>
 </updates>

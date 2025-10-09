@@ -75,6 +75,50 @@ class plgPCTVies_Vat_Number_Validation extends CMSPlugin
 		$this->checkVat($context, $data, $eventData);
 		$this->checkEuVatCustomer($context, $data, $eventData);
 		$this->checkNonEuCustomer($context, $data, $eventData);
+
+		// Set tax type
+		// Place of taxable supply - EU example
+		/*
+		┌───┬──────────────────────────────────────────────────┐
+		│ 0 │ Not set                                          │
+		├───┼──────────────────────────────────────────────────┤
+		│ 1 │ Seller country (in EU)                           │
+		├───┼────┬─────────────────────────────────────────────┤
+		│   │ a) │ VAT payer in the same country               │
+		├───┼────┼─────────────────────────────────────────────┤
+		│   │ b) │ Not VAT payer in the same country           │
+		├───┼────┼─────────────────────────────────────────────┤
+		│   │ c) │ Not VAT payer in EU country                 │
+		├───┼────┴─────────────────────────────────────────────┤
+		│ 2 │ Customer country (in EU)                         │
+		├───┼────┬─────────────────────────────────────────────┤
+		│   │ a) │ VAT payer in EU (not the same country)      │
+		├───┼────┴─────────────────────────────────────────────┤
+		│ 3 │ Customer country (outside EU)                    │
+		├───┼────┬─────────────────────────────────────────────┤
+		│   │ a) │ VAT payer outside EU                        │
+		├───┼────┼─────────────────────────────────────────────┤
+		│   │ b) │ Not VAT payer outside EU                    │
+		└───┴────┴─────────────────────────────────────────────┘
+		*/
+		if (!empty($data->params_user)) {
+			$paramsUser = json_decode($data->params_user, true);
+
+			$taxType = 0; // Not set
+			if (isset($paramsUser['vat_customer_non_eu']) && $paramsUser['vat_customer_non_eu'] == 1) {
+				$taxType = 3;
+			} else if (isset($paramsUser['vat_customer_eu_valid_different']) && $paramsUser['vat_customer_eu_valid_different'] == 1) {
+				$taxType = 2;
+			} else {
+				// If we use this plugin, we assume that we are collecting information, so taxType = 0 is ignored
+				$taxType = 1;
+			}
+
+			$paramsUser['tax_type'] = $taxType;
+
+			$data->params_user = json_encode($paramsUser);
+		}
+
 		return true;
 	}
 
@@ -692,10 +736,11 @@ class plgPCTVies_Vat_Number_Validation extends CMSPlugin
 			if ($vendor_country != '' && in_array($vendor_country, $this->getEuCountryList())) {
 
 				// Is customer in EU country
-				if ($params['vat_country_code_address'] != '' && in_array($params['vat_country_code_address'], $this->getEuCountryList())) {
+				if ($params['vat_country_code_address'] != '' && in_array(strtoupper($params['vat_country_code_address']), $this->getEuCountryList())) {
 
 					// Is vendor country different to customer country
-					if (isset($params['vat_country_code']) && $params['vat_country_code'] != '' && $params['vat_country_code'] != $vendor_country) {
+					// uppercase because EU vat validation is case-insensitive
+					if (isset($params['vat_country_code']) && $params['vat_country_code'] != '' && strtoupper($params['vat_country_code']) != $vendor_country) {
 						return true;
 					}
 				}
