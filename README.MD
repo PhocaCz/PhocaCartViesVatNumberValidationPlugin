@@ -54,10 +54,6 @@ Phoca Cart Tax - VIES VAT Number Validation Plugin - tax method for Phoca Cart c
 
 
 
-## Version (Joomla! 4.x)
-
-4.0.7
-
 ## Version (Joomla! 5.x)
 
 5.0.2

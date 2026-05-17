@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
-<extension type="plugin" group="pct" method="upgrade" version="5.0">
+<extension type="plugin" group="pct" method="upgrade" version="6.0">
 	<name>plg_pct_vies_vat_number_validation</name>
 	<author>Jan Pavelka (www.phoca.cz)</author>
-	<creationDate>09/10/2025</creationDate>
+	<creationDate>16/05/2026</creationDate>
 	<authorEmail></authorEmail>
 	<authorUrl>https://www.phoca.cz</authorUrl>
 	<copyright>Jan Pavelka</copyright>
 	<license>GNU/GPL</license>
-	<version>5.0.2</version>
+	<version>6.1.0</version>
 	<description>PLG_PCT_VIES_VAT_NUMBER_VALIDATION_DESCRIPTION</description>
 	<projectName>PhocaCartViesVatNumberValidationPlugin</projectName>
 
